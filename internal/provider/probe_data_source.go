@@ -6,7 +6,6 @@ package provider
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -101,36 +100,52 @@ func (d *ProbeDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	cloudControlType := resolveCloudControlType(data.Type.ValueString())
+	identifier := data.ID.ValueString()
 
-	result, err := d.client.GetResource(ctx, &cloudcontrol.GetResourceInput{
-		TypeName:   aws.String(cloudControlType),
-		Identifier: aws.String(data.ID.ValueString()),
+	// Use ListResources and filter by identifier for LocalStack compatibility.
+	// GetResource is not implemented in LocalStack.
+	var foundResource *cctypes.ResourceDescription
+	paginator := cloudcontrol.NewListResourcesPaginator(d.client, &cloudcontrol.ListResourcesInput{
+		TypeName: aws.String(cloudControlType),
 	})
 
-	if err != nil {
-		var notFound *cctypes.ResourceNotFoundException
-		if errors.As(err, &notFound) {
-			// NOT AN ERROR - resource just doesn't exist
-			data.Exists = types.BoolValue(false)
-			data.Arn = types.StringNull()
-			data.Properties = types.DynamicNull()
-			resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	for paginator.HasMorePages() {
+		page, err := paginator.NextPage(ctx)
+		if err != nil {
+			resp.Diagnostics.AddError("Probe failed", err.Error())
 			return
 		}
-		// Actual errors (permissions, network, unsupported type, etc.) should fail
-		resp.Diagnostics.AddError("Probe failed", err.Error())
+
+		for _, resource := range page.ResourceDescriptions {
+			if resource.Identifier != nil && *resource.Identifier == identifier {
+				foundResource = &resource
+				break
+			}
+		}
+
+		if foundResource != nil {
+			break
+		}
+	}
+
+	if foundResource == nil {
+		// Resource not found - NOT AN ERROR
+		data.Exists = types.BoolValue(false)
+		data.Arn = types.StringNull()
+		data.Properties = types.DynamicNull()
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
 
 	// Parse properties JSON into dynamic type
-	props, propsDiags := parsePropertiesToDynamic(*result.ResourceDescription.Properties)
+	props, propsDiags := parsePropertiesToDynamic(*foundResource.Properties)
 	resp.Diagnostics.Append(propsDiags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Extract ARN from properties
-	propsMap := parsePropertiesToMap(*result.ResourceDescription.Properties)
+	propsMap := parsePropertiesToMap(*foundResource.Properties)
 	arnValue := extractArn(propsMap)
 
 	data.Exists = types.BoolValue(true)
