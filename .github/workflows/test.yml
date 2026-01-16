@@ -54,7 +54,7 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@55c2c1448f86e01eaae002a5a3a9624417608d84 # v6
-        with:
-          version: latest
+      - name: Install pre-commit
+        run: pipx install prek
+      - name: Run pre-commit
+        run: prek run --all-files
