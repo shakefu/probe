@@ -74,11 +74,14 @@ resource "aws_dynamodb_table" "my_table" {
 
 ```terraform
 provider "probe" {
-  # Optional: Explicit region (defaults to AWS_REGION env var, then us-east-1)
+  # Optional: Explicit region (defaults to AWS_REGION, AWS_DEFAULT_REGION, then us-east-1)
   # region = "us-west-2"
 
   # Optional: Override endpoint for LocalStack or other compatible services
   # endpoint = "http://localhost:4566"
+
+  # Optional: Explicitly enable/disable LocalStack detection (auto-detects by default)
+  # localstack = true
 }
 ```
 
@@ -104,9 +107,11 @@ configured.
 ### Optional
 
 - `region` (String) AWS region. Defaults to `AWS_REGION` environment variable,
-  then `us-east-1`.
+  then `AWS_DEFAULT_REGION`, then `us-east-1`.
 - `endpoint` (String) Custom endpoint URL for AWS APIs. Useful for LocalStack
-  or other compatible services.
+  or other compatible services. Setting this implies `localstack = true`.
+- `localstack` (Boolean) Explicitly enable or disable LocalStack detection.
+  If not set, auto-detects LocalStack at `localhost:4566`.
 
 ## Supported Resource Types
 

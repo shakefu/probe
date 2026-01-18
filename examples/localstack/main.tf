@@ -13,7 +13,7 @@ provider "probe" {
   # endpoint = "http://localhost:4566"
 }
 
-# Check for various resource types
+# Check for supported resource types
 data "probe" "dynamodb_table" {
   type = "aws_dynamodb_table"
   id   = "test-table"
@@ -24,22 +24,16 @@ data "probe" "s3_bucket" {
   id   = "test-bucket"
 }
 
-data "probe" "sqs_queue" {
-  type = "aws_sqs_queue"
-  id   = "test-queue"
-}
-
-# You can also use Cloud Control type names directly
-data "probe" "lambda_function" {
-  type = "AWS::Lambda::Function"
-  id   = "test-function"
+# You can also use AWS CloudFormation type names
+data "probe" "dynamodb_cfn_style" {
+  type = "AWS::DynamoDB::Table"
+  id   = "another-table"
 }
 
 output "resources" {
   value = {
-    dynamodb_exists = data.probe.dynamodb_table.exists
-    s3_exists       = data.probe.s3_bucket.exists
-    sqs_exists      = data.probe.sqs_queue.exists
-    lambda_exists   = data.probe.lambda_function.exists
+    dynamodb_exists     = data.probe.dynamodb_table.exists
+    s3_exists           = data.probe.s3_bucket.exists
+    dynamodb_cfn_exists = data.probe.dynamodb_cfn_style.exists
   }
 }

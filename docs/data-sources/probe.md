@@ -102,4 +102,4 @@ supported:
 | `aws_dynamodb_table` | `AWS::DynamoDB::Table` | Table name     |
 | `aws_s3_bucket`      | `AWS::S3::Bucket`      | Bucket name    |
 
-Additional resource types will be added incrementally.
+Additional resource types will be added incrementally. Contributions welcome!

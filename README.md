@@ -77,7 +77,7 @@ provider "probe" {
   # Optional: Override endpoint (implies localstack = true)
   # endpoint = "http://localhost:4566"
 
-  # Optional: Explicit region (defaults to AWS_REGION, then us-east-1)
+  # Optional: Explicit region (defaults to AWS_REGION, AWS_DEFAULT_REGION, then us-east-1)
   # region = "us-west-2"
 }
 ```

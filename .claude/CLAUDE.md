@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Terraform provider written in Go using the [terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework). The provider checks whether AWS resources exist without failing when they don't, using the AWS Cloud Control API.
+This is a Terraform provider written in Go using the [terraform-plugin-framework](https://developer.hashicorp.com/terraform/plugin/framework). The provider checks whether AWS resources exist without failing when they don't, using native AWS SDK calls.
 
 See `context/terraform-provider-probe-design.md` for the full design document.
 
@@ -283,7 +283,7 @@ go doc internal/provider        # View documentation for provider package
 
 - Binary name is `terraform-provider-probe`
 - Provider address is `registry.terraform.io/shakefu/probe`
-- Uses AWS Cloud Control API for resource existence checks
+- Uses native AWS SDK calls for resource existence checks
 - Automatically detects LocalStack at `localhost:4566`
 - Use `go mod tidy` to clean up dependencies
 - Use `go mod verify` to verify dependencies haven't been modified
