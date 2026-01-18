@@ -19,9 +19,6 @@ coverage.out
 .DS_Store
 Thumbs.db
 
-# Local task tracking (per CLAUDE.md)
-context/*.json
-
 # Terraform
 .terraform/
 *.tfstate
