@@ -20,7 +20,7 @@ coverage.out
 Thumbs.db
 
 # Local task tracking (per CLAUDE.md)
-context/*.json
+# context/*.json
 
 # Terraform
 .terraform/
