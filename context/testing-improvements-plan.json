@@ -28,7 +28,7 @@
     {
       "id": "add-coverage-badge",
       "name": "Add coverage badge to README",
-      "status": "pending",
+      "status": "complete",
       "priority": 2,
       "blocked_by": "add-coverage-threshold",
       "output_file": "README.md",

@@ -1,5 +1,8 @@
 # terraform-provider-probe
 
+[![Tests](https://github.com/shakefu/terraform-provider-probe/actions/workflows/test.yml/badge.svg)](https://github.com/shakefu/terraform-provider-probe/actions/workflows/test.yml)
+[![codecov](https://codecov.io/gh/shakefu/terraform-provider-probe/graph/badge.svg)](https://codecov.io/gh/shakefu/terraform-provider-probe)
+
 A Terraform/OpenTofu provider that checks whether AWS resources exist
 without failing when they don't.
 
