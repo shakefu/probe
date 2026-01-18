@@ -106,7 +106,7 @@ jobs:
           fi
           echo "Coverage ${COVERAGE}% meets threshold of ${THRESHOLD}%"
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@e96185f4044c2f0cedf0f022454acf9811cf8057 # v5.4.0
         with:
           files: coverage.out
           fail_ci_if_error: false
