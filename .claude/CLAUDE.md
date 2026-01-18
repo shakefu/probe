@@ -76,7 +76,7 @@ Each session starts with no memory of previous work. Follow this protocol:
 
 ### Task Stash Stack
 
-The `context/` directory is not in version control (gitignored). Task files are local working state only.
+The `context/` directory is version controlled. Task files track work across sessions.
 
 When interrupted by higher-priority work:
 
