@@ -6,7 +6,7 @@
 A Terraform/OpenTofu provider that checks whether AWS resources exist
 without failing when they don't.
 
-Sponsored by [Textla.com](https://textla.com).
+Sponsored by [<img alt="Textla.com" width="72" height="29" alt="Textla Logo Go Green" src="https://github.com/user-attachments/assets/2856b6ea-2ec7-4c24-a454-855a826646a8" />](https://textla.com).
 
 ## The Problem
 
