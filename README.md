@@ -6,6 +6,8 @@
 A Terraform/OpenTofu provider that checks whether AWS resources exist
 without failing when they don't.
 
+Sponsored by [Textla.com](https://textla.com).
+
 ## The Problem
 
 Terraform and OpenTofu have no native way to gracefully check if a resource
