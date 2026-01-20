@@ -5,17 +5,63 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+# Required Go version from go.mod
+REQUIRED_GO_VERSION="1.25.5"
+
+echo "==> Checking Go version..."
+if command -v go &> /dev/null; then
+    CURRENT_GO_VERSION=$(go version | grep -oP 'go\K[0-9]+\.[0-9]+(\.[0-9]+)?' || echo "0")
+    echo "    Current Go version: $CURRENT_GO_VERSION"
+else
+    CURRENT_GO_VERSION="0"
+    echo "    Go not found"
+fi
+
+# Compare versions (simple string comparison works for go versions)
+if [[ "$CURRENT_GO_VERSION" != "$REQUIRED_GO_VERSION" ]]; then
+    echo "==> Installing Go $REQUIRED_GO_VERSION..."
+
+    # Detect architecture
+    ARCH=$(uname -m)
+    case "$ARCH" in
+        x86_64) GOARCH="amd64" ;;
+        aarch64|arm64) GOARCH="arm64" ;;
+        *) echo "    ERROR: Unsupported architecture: $ARCH"; exit 1 ;;
+    esac
+
+    # Detect OS
+    OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+
+    GO_TARBALL="go${REQUIRED_GO_VERSION}.${OS}-${GOARCH}.tar.gz"
+    GO_URL="https://go.dev/dl/${GO_TARBALL}"
+
+    # Download and install Go
+    INSTALL_DIR="${INSTALL_DIR:-/usr/local}"
+    if [[ -w "$INSTALL_DIR" ]]; then
+        rm -rf "$INSTALL_DIR/go"
+        curl -fsSL "$GO_URL" | tar -C "$INSTALL_DIR" -xz
+    else
+        sudo rm -rf "$INSTALL_DIR/go"
+        curl -fsSL "$GO_URL" | sudo tar -C "$INSTALL_DIR" -xz
+    fi
+
+    # Ensure Go is in PATH for this session
+    export PATH="$INSTALL_DIR/go/bin:$PATH"
+    echo "    Go $REQUIRED_GO_VERSION installed to $INSTALL_DIR/go"
+    echo "    NOTE: Add '$INSTALL_DIR/go/bin' to your PATH if not already present"
+else
+    echo "    Go $CURRENT_GO_VERSION is already installed"
+fi
+
 echo "==> Installing prek (pre-commit replacement)..."
 if command -v prek &> /dev/null; then
     echo "    prek already installed: $(prek --version 2>&1 | head -1)"
 else
-    if command -v pip3 &> /dev/null; then
-        pip3 install --quiet prek
-    elif command -v pip &> /dev/null; then
-        pip install --quiet prek
-    else
-        echo "    ERROR: pip not found. Please install pip to continue."
-        exit 1
+    curl --proto '=https' --tlsv1.2 -LsSf https://github.com/j178/prek/releases/latest/download/prek-installer.sh | sh
+    # Source cargo env if it was installed there
+    if [[ -f "$HOME/.cargo/env" ]]; then
+        # shellcheck source=/dev/null
+        source "$HOME/.cargo/env"
     fi
     echo "    prek installed: $(prek --version 2>&1 | head -1)"
 fi
