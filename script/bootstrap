@@ -20,17 +20,4 @@ else
     echo "    prek installed: $(prek --version 2>&1 | head -1)"
 fi
 
-echo "==> Installing ginkgo CLI..."
-if command -v ginkgo &> /dev/null; then
-    echo "    ginkgo already installed: $(ginkgo version 2>&1)"
-else
-    # Check if Go bin is in PATH
-    GOBIN="${GOBIN:-$(go env GOPATH)/bin}"
-    if [[ -x "$GOBIN/ginkgo" ]]; then
-        echo "    ginkgo installed at $GOBIN/ginkgo (add to PATH)"
-    else
-        go install github.com/onsi/ginkgo/v2/ginkgo@latest 2>/dev/null || echo "    ginkgo install skipped (network unavailable)"
-    fi
-fi
-
 echo "==> Bootstrap complete!"

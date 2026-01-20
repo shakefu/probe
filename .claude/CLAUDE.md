@@ -58,7 +58,7 @@ provider_installation {
 
 Each session starts with no memory of previous work. Follow this protocol:
 
-1. **Bootstrap environment**: Run `script/bootstrap` with `run_in_background: true` to install tools (prek, ginkgo)
+1. **Bootstrap environment**: Run `script/bootstrap` with `run_in_background: true` to install tools (prek)
 2. **Verify clean state**: Run `git status`, `git stash list`, check for unpushed commits. Ask user if any pending changes exist.
 3. **Create feature branch**: Checkout main, pull latest changes on main branch, create branch `<type>/<description>-<session-id>`
 4. **Start baseline tests**: Run `go test ./...` with `run_in_background: true` (skip for docs/context-only changes)
