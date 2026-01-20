@@ -82,7 +82,7 @@
     }
   ],
   "notes": [
-    "Tests cannot run locally in this environment (no network for Go toolchain)",
+    "Run tests with: GOPROXY=direct go test ./... -v",
     "CI uses GitHub Actions with go-version-file from go.mod",
     "Acceptance tests require TF_ACC=1 and real/emulated AWS services",
     "LocalStack provides free S3 and DynamoDB emulation",
