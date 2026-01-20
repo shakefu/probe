@@ -6,7 +6,9 @@
 A Terraform/OpenTofu provider that checks whether AWS resources exist
 without failing when they don't.
 
-Sponsored by [Textla.com](https://textla.com).
+<!-- markdownlint-disable MD013 MD033 -->
+Sponsored by [<img alt="Textla.com" width="72" height="29" src="https://github.com/user-attachments/assets/2856b6ea-2ec7-4c24-a454-855a826646a8" />](https://textla.com).
+<!-- markdownlint-enable MD013 MD033 -->
 
 Terraform and OpenTofu have no native way to gracefully check if a resource
 exists before deciding whether to create it.
@@ -17,9 +19,9 @@ all either fail, or have problematic external dependencies:
 - Standard data sources - Fail with an error if the resource doesn't exist
 - `awscc` plural data sources - Fail with "Empty result" when none exist
 - `external` data source - Requires bash scripts and manual configuration
-- [`import` blocks][import] - Fail if resource doesn't exist (no optional import)
-
-[import]: https://developer.hashicorp.com/terraform/language/import
+<!-- markdownlint-disable MD013 -->
+- [`import` blocks](https://developer.hashicorp.com/terraform/language/import) - Fail if the resource doesn't exist (no "optional import")
+<!-- markdownlint-enable MD013 -->
 
 This provider solves that problem.
 
