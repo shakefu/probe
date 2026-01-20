@@ -1,0 +1,269 @@
+{
+  "plan_name": "IAM Policy Simulation Data Source",
+  "last_updated": "2026-01-19",
+  "description": "Implement a new data source for probing IAM permissions using the AWS Policy Simulator API, following the probe provider philosophy of 'check without failing'.",
+  "session_startup": [
+    "Run git status to check branch",
+    "Run go test ./... to verify baseline",
+    "Read context/current-task.json to find active plan",
+    "Read this plan file",
+    "Find first task where status=pending and blocked_by=null"
+  ],
+  "design_decisions": {
+    "data_source_name": "probe_iam_policy_simulation",
+    "rationale": [
+      "Separate data source (not extending ResourceProber) because IAM simulation has different semantics",
+      "Name includes 'simulation' to be clear about what API is used",
+      "Follows probe provider namespace conventions"
+    ],
+    "api_choice": {
+      "primary": "SimulatePrincipalPolicy",
+      "rationale": "Most common use case - check if existing principal has permissions",
+      "future": "SimulateCustomPolicy can be added as separate data source later"
+    },
+    "error_handling": {
+      "philosophy": "Return allowed=false with error details instead of failing",
+      "NoSuchEntity": "Return allowed=false, populate error field",
+      "AccessDenied": "Return allowed=false, populate error field (caller lacks iam:SimulatePrincipalPolicy)",
+      "InvalidInput": "Return diagnostic error (actual configuration problem)"
+    },
+    "localstack_support": {
+      "status": "Not supported",
+      "rationale": "SimulatePrincipalPolicy not listed in LocalStack IAM coverage",
+      "testing_strategy": "Unit tests with mocked AWS client, optional acceptance tests against real AWS"
+    }
+  },
+  "schema": {
+    "data_source": "probe_iam_policy_simulation",
+    "arguments": {
+      "required": {
+        "policy_source_arn": {
+          "type": "string",
+          "description": "ARN of the IAM principal (user, role, group) whose policies will be tested"
+        },
+        "actions": {
+          "type": "list(string)",
+          "description": "List of IAM actions to simulate (e.g., s3:GetObject, iam:CreateUser)"
+        }
+      },
+      "optional": {
+        "resource_arns": {
+          "type": "list(string)",
+          "description": "List of resource ARNs to simulate against. Defaults to ['*'] if not specified"
+        },
+        "caller_arn": {
+          "type": "string",
+          "description": "ARN of user to simulate as caller. Defaults to policy_source_arn if it's a user"
+        },
+        "context": {
+          "type": "block set",
+          "description": "Context entries for condition evaluation",
+          "attributes": {
+            "key": "string (required) - Context key name like 'aws:CurrentTime'",
+            "type": "string (required) - Value type: 'string', 'stringList', 'numeric', 'numericList', 'boolean', 'date', 'dateList', 'ip', 'ipList', 'binary', 'binaryList'",
+            "values": "list(string) (required) - Values for the context key"
+          }
+        },
+        "additional_policies": {
+          "type": "list(string)",
+          "description": "Additional IAM policies (as JSON strings) to include in simulation"
+        },
+        "permissions_boundary_policies": {
+          "type": "list(string)",
+          "description": "Permissions boundary policies (as JSON strings) to apply"
+        },
+        "resource_policy": {
+          "type": "string",
+          "description": "Resource-based policy (as JSON string) for simulation"
+        }
+      }
+    },
+    "attributes": {
+      "allowed": {
+        "type": "bool",
+        "description": "True if ALL actions are allowed for ALL resources. This is the primary output for simple permission checks"
+      },
+      "error": {
+        "type": "string",
+        "description": "Error message if simulation could not be performed (e.g., principal doesn't exist). Null if successful"
+      },
+      "results": {
+        "type": "list(object)",
+        "description": "Detailed results for each action/resource combination",
+        "attributes": {
+          "action": "string - The action that was evaluated",
+          "resource_arn": "string - The resource ARN evaluated",
+          "allowed": "bool - Whether this specific action/resource is allowed",
+          "decision": "string - 'allowed', 'explicitDeny', or 'implicitDeny'",
+          "matched_statements": "list(object) - Statements that contributed to the decision",
+          "missing_context_keys": "list(string) - Context keys required but not provided"
+        }
+      }
+    }
+  },
+  "tasks": [
+    {
+      "id": "create-data-source-file",
+      "name": "Create IAM policy simulation data source file",
+      "status": "pending",
+      "priority": 1,
+      "blocked_by": null,
+      "output_file": "internal/provider/iam_policy_simulation_data_source.go",
+      "steps": [
+        "Create new file internal/provider/iam_policy_simulation_data_source.go",
+        "Define IamPolicySimulationDataSource struct with aws.Config",
+        "Define IamPolicySimulationDataSourceModel with all schema fields",
+        "Implement Metadata() returning 'probe_iam_policy_simulation'",
+        "Implement Schema() with all arguments and attributes",
+        "Implement Configure() to receive aws.Config from provider",
+        "Stub Read() to prepare for implementation"
+      ],
+      "acceptance_criteria": [
+        "File compiles without errors",
+        "Schema matches design document",
+        "go build succeeds"
+      ]
+    },
+    {
+      "id": "implement-read-logic",
+      "name": "Implement Read() with SimulatePrincipalPolicy call",
+      "status": "pending",
+      "priority": 2,
+      "blocked_by": "create-data-source-file",
+      "output_file": "internal/provider/iam_policy_simulation_data_source.go",
+      "steps": [
+        "Create IAM client from aws.Config",
+        "Build SimulatePrincipalPolicyInput from schema values",
+        "Handle context entries conversion",
+        "Call SimulatePrincipalPolicy API",
+        "Handle pagination if results exceed page size",
+        "Convert results to schema format",
+        "Handle errors per design (NoSuchEntity -> allowed=false, error populated)"
+      ],
+      "acceptance_criteria": [
+        "Read() fully implemented",
+        "Error handling follows probe philosophy",
+        "Results properly converted to Terraform types"
+      ]
+    },
+    {
+      "id": "register-data-source",
+      "name": "Register data source with provider",
+      "status": "pending",
+      "priority": 3,
+      "blocked_by": "create-data-source-file",
+      "output_file": "internal/provider/provider.go",
+      "steps": [
+        "Add NewIamPolicySimulationDataSource to DataSources() slice in provider.go",
+        "Verify data source is available in terraform providers schema"
+      ],
+      "acceptance_criteria": [
+        "Data source appears in provider schema",
+        "go build succeeds"
+      ]
+    },
+    {
+      "id": "unit-tests",
+      "name": "Create unit tests with mocked AWS client",
+      "status": "pending",
+      "priority": 4,
+      "blocked_by": "implement-read-logic",
+      "output_file": "internal/provider/iam_policy_simulation_data_source_test.go",
+      "steps": [
+        "Create test file",
+        "Implement mock IAM client interface",
+        "Test case: all actions allowed -> allowed=true",
+        "Test case: some actions denied -> allowed=false, results show which",
+        "Test case: explicit deny -> decision='explicitDeny'",
+        "Test case: principal not found -> allowed=false, error populated",
+        "Test case: access denied (no simulate permission) -> allowed=false, error populated",
+        "Test case: with context entries",
+        "Test case: with resource_arns specified"
+      ],
+      "acceptance_criteria": [
+        "All test cases pass",
+        "Edge cases covered",
+        "go test ./... passes"
+      ]
+    },
+    {
+      "id": "acceptance-tests",
+      "name": "Create acceptance tests (optional - requires AWS)",
+      "status": "pending",
+      "priority": 5,
+      "blocked_by": "unit-tests",
+      "output_file": "internal/provider/iam_policy_simulation_data_source_test.go",
+      "steps": [
+        "Add acceptance test that creates IAM role with known policy",
+        "Test simulation returns expected results",
+        "Test with resource ARNs",
+        "Document that tests require AWS credentials with iam:SimulatePrincipalPolicy",
+        "Add skip condition if AWS not available"
+      ],
+      "acceptance_criteria": [
+        "Acceptance tests pass with TF_ACC=1",
+        "Tests properly skip when AWS not available",
+        "Tests clean up resources"
+      ]
+    },
+    {
+      "id": "documentation",
+      "name": "Update documentation",
+      "status": "pending",
+      "priority": 6,
+      "blocked_by": "unit-tests",
+      "output_file": "README.md",
+      "steps": [
+        "Add probe_iam_policy_simulation to supported data sources table",
+        "Add usage example showing simple permission check",
+        "Add usage example showing conditional logic based on allowed",
+        "Document LocalStack limitation",
+        "Document required IAM permissions for caller"
+      ],
+      "acceptance_criteria": [
+        "README accurately describes new data source",
+        "Examples are clear and correct",
+        "Limitations documented"
+      ]
+    },
+    {
+      "id": "example-config",
+      "name": "Create example Terraform configuration",
+      "status": "pending",
+      "priority": 7,
+      "blocked_by": "documentation",
+      "output_file": "examples/iam_policy_simulation/main.tf",
+      "steps": [
+        "Create examples/iam_policy_simulation directory",
+        "Create main.tf with example usage",
+        "Show conditional resource creation based on allowed",
+        "Include comments explaining use case"
+      ],
+      "acceptance_criteria": [
+        "Example is syntactically valid",
+        "Example demonstrates probe philosophy (check without failing)"
+      ]
+    }
+  ],
+  "notes": [
+    "This is a NEW data source, not an extension of the existing probe data source",
+    "The probe philosophy applies: return allowed=false instead of errors where possible",
+    "LocalStack does not support SimulatePrincipalPolicy, so acceptance tests need real AWS",
+    "Consider SimulateCustomPolicy as a future enhancement (separate data source)",
+    "The context block mirrors AWS provider for familiarity"
+  ],
+  "references": [
+    {
+      "name": "AWS SimulatePrincipalPolicy API",
+      "url": "https://docs.aws.amazon.com/IAM/latest/APIReference/API_SimulatePrincipalPolicy.html"
+    },
+    {
+      "name": "AWS Provider Implementation",
+      "url": "https://github.com/hashicorp/terraform-provider-aws/blob/main/internal/service/iam/principal_policy_simulation_data_source.go"
+    },
+    {
+      "name": "Self-validating permissions article",
+      "url": "https://mikeball.info/blog/terraform-self-validating-plan-time-permissions-checks/"
+    }
+  ]
+}
