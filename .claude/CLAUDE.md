@@ -58,12 +58,13 @@ provider_installation {
 
 Each session starts with no memory of previous work. Follow this protocol:
 
-1. **Verify clean state**: Run `git status`, `git stash list`, check for unpushed commits. Ask user if any pending changes exist.
-2. **Create feature branch**: Checkout main, pull latest changes on main branch, create branch `<type>/<description>-<session-id>`
-3. **Start baseline tests**: Run `go test ./...` with `run_in_background: true` (skip for docs/context-only changes)
-4. **Find current task**: Read `context/current-task.json` for active work
-5. **Review recent history**: Run `git log --oneline -5`
-6. **Execute**: Find first task where `status=pending` and `blocked_by=null`, complete it, update status
+1. **Bootstrap environment**: Run `script/bootstrap` with `run_in_background: true` to install tools (prek, ginkgo)
+2. **Verify clean state**: Run `git status`, `git stash list`, check for unpushed commits. Ask user if any pending changes exist.
+3. **Create feature branch**: Checkout main, pull latest changes on main branch, create branch `<type>/<description>-<session-id>`
+4. **Start baseline tests**: Run `go test ./...` with `run_in_background: true` (skip for docs/context-only changes)
+5. **Find current task**: Read `context/current-task.json` for active work
+6. **Review recent history**: Run `git log --oneline -5`
+7. **Execute**: Find first task where `status=pending` and `blocked_by=null`, complete it, update status
 
 **Using background tests**: After making code changes, use `BashOutput` to check results. Start a new background test run after edits to verify changes.
 
@@ -218,9 +219,9 @@ Do not narrate actions. Tool calls are structured output - the user sees them di
 
 Otherwise: execute silently.
 
-## Code Quality & Pre-commit
+## Code Quality & Linting
 
-Pre-commit hooks (configured in `.pre-commit-config.yaml`) automatically run:
+Linting hooks (configured in `.pre-commit-config.yaml`) are run via `prek`:
 
 - `go-fmt` and `go-mod-tidy`
 - Conventional commit validation
@@ -230,11 +231,13 @@ Pre-commit hooks (configured in `.pre-commit-config.yaml`) automatically run:
 **Before every commit**, run:
 
 ```bash
-pre-commit run --all-files    # Run all hooks
+prek run --all-files          # Run all hooks (fast pre-commit replacement)
 go fmt ./...                  # Format Go code
 go vet ./...                  # Run go vet
 go mod tidy                   # Clean up dependencies
 ```
+
+Install prek via `script/bootstrap` or `pip install prek`.
 
 ## Commit Message Requirements
 
@@ -252,7 +255,7 @@ Breaking changes: `feat!: description` or `BREAKING CHANGE:` in footer
 
 ## Committing Guidelines for Claude Code
 
-1. **Run pre-commit before every commit** - Catches formatting and linting issues
+1. **Run prek before every commit** - Catches formatting and linting issues
 2. **NEVER commit/push without explicit user approval**
 3. **Avoid hardcoding values that change** - No version numbers, dates, or timestamps in tests
 4. **When fixing tests** - Understand what's being validated, fix the underlying issue
