@@ -5,12 +5,146 @@ package provider
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
+
+func TestContains(t *testing.T) {
+	tests := []struct {
+		name     string
+		s        string
+		substr   string
+		expected bool
+	}{
+		{
+			name:     "substring at start",
+			s:        "hello world",
+			substr:   "hello",
+			expected: true,
+		},
+		{
+			name:     "substring at end",
+			s:        "hello world",
+			substr:   "world",
+			expected: true,
+		},
+		{
+			name:     "substring in middle",
+			s:        "hello world",
+			substr:   "lo wo",
+			expected: true,
+		},
+		{
+			name:     "exact match",
+			s:        "hello",
+			substr:   "hello",
+			expected: true,
+		},
+		{
+			name:     "substring not found",
+			s:        "hello world",
+			substr:   "xyz",
+			expected: false,
+		},
+		{
+			name:     "empty substring",
+			s:        "hello",
+			substr:   "",
+			expected: true,
+		},
+		{
+			name:     "empty string",
+			s:        "",
+			substr:   "hello",
+			expected: false,
+		},
+		{
+			name:     "both empty",
+			s:        "",
+			substr:   "",
+			expected: true,
+		},
+		{
+			name:     "substring longer than string",
+			s:        "hi",
+			substr:   "hello",
+			expected: false,
+		},
+		{
+			name:     "case sensitive",
+			s:        "Hello World",
+			substr:   "hello",
+			expected: false,
+		},
+		{
+			name:     "numeric substring",
+			s:        "error 404 not found",
+			substr:   "404",
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := contains(tt.s, tt.substr)
+			if result != tt.expected {
+				t.Errorf("contains(%q, %q) = %v, want %v", tt.s, tt.substr, result, tt.expected)
+			}
+		})
+	}
+}
+
+func TestIsS3NotFound(t *testing.T) {
+	tests := []struct {
+		name     string
+		err      error
+		expected bool
+	}{
+		{
+			name:     "error contains 404",
+			err:      errors.New("api error: 404 bucket not found"),
+			expected: true,
+		},
+		{
+			name:     "error contains NotFound",
+			err:      errors.New("operation error: NotFound"),
+			expected: true,
+		},
+		{
+			name:     "error contains NoSuchBucket",
+			err:      errors.New("NoSuchBucket: The specified bucket does not exist"),
+			expected: true,
+		},
+		{
+			name:     "generic error",
+			err:      errors.New("access denied"),
+			expected: false,
+		},
+		{
+			name:     "timeout error",
+			err:      errors.New("connection timeout"),
+			expected: false,
+		},
+		{
+			name:     "403 forbidden",
+			err:      errors.New("403 Forbidden"),
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isS3NotFound(tt.err)
+			if result != tt.expected {
+				t.Errorf("isS3NotFound(%v) = %v, want %v", tt.err, result, tt.expected)
+			}
+		})
+	}
+}
 
 func TestS3Prober_BucketNotFound(t *testing.T) {
 	cfg := getLocalStackConfig(t)
