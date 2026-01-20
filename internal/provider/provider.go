@@ -133,6 +133,7 @@ func (p *ProbeProvider) Resources(ctx context.Context) []func() resource.Resourc
 func (p *ProbeProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewProbeDataSource,
+		NewIamPolicySimulationDataSource,
 	}
 }
 

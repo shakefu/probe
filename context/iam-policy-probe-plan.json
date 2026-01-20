@@ -1,6 +1,6 @@
 {
   "plan_name": "IAM Policy Simulation Data Source",
-  "last_updated": "2026-01-19",
+  "last_updated": "2026-01-20",
   "description": "Implement a new data source for probing IAM permissions using the AWS Policy Simulator API, following the probe provider philosophy of 'check without failing'.",
   "session_startup": [
     "Run git status to check branch",
@@ -105,7 +105,7 @@
     {
       "id": "create-data-source-file",
       "name": "Create IAM policy simulation data source file",
-      "status": "pending",
+      "status": "complete",
       "priority": 1,
       "blocked_by": null,
       "output_file": "internal/provider/iam_policy_simulation_data_source.go",
@@ -127,7 +127,7 @@
     {
       "id": "implement-read-logic",
       "name": "Implement Read() with SimulatePrincipalPolicy call",
-      "status": "pending",
+      "status": "complete",
       "priority": 2,
       "blocked_by": "create-data-source-file",
       "output_file": "internal/provider/iam_policy_simulation_data_source.go",
@@ -149,7 +149,7 @@
     {
       "id": "register-data-source",
       "name": "Register data source with provider",
-      "status": "pending",
+      "status": "complete",
       "priority": 3,
       "blocked_by": "create-data-source-file",
       "output_file": "internal/provider/provider.go",
@@ -165,7 +165,7 @@
     {
       "id": "unit-tests",
       "name": "Create unit tests with mocked AWS client",
-      "status": "pending",
+      "status": "complete",
       "priority": 4,
       "blocked_by": "implement-read-logic",
       "output_file": "internal/provider/iam_policy_simulation_data_source_test.go",
@@ -189,7 +189,7 @@
     {
       "id": "acceptance-tests",
       "name": "Create acceptance tests (optional - requires AWS)",
-      "status": "pending",
+      "status": "complete",
       "priority": 5,
       "blocked_by": "unit-tests",
       "output_file": "internal/provider/iam_policy_simulation_data_source_test.go",
@@ -209,7 +209,7 @@
     {
       "id": "documentation",
       "name": "Update documentation",
-      "status": "pending",
+      "status": "complete",
       "priority": 6,
       "blocked_by": "unit-tests",
       "output_file": "README.md",
@@ -229,7 +229,7 @@
     {
       "id": "example-config",
       "name": "Create example Terraform configuration",
-      "status": "pending",
+      "status": "complete",
       "priority": 7,
       "blocked_by": "documentation",
       "output_file": "examples/iam_policy_simulation/main.tf",
