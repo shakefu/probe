@@ -1,6 +1,19 @@
 {
-  "active_plan": "iam-policy-probe-plan",
-  "last_updated": "2026-01-19",
-  "notes": "Implementation plan created. Ready for implementation.",
-  "plan_file": "context/iam-policy-probe-plan.json"
+  "active_plan": "cloud-control-cleanup",
+  "last_updated": "2026-01-20",
+  "notes": "Review codebase for leftover Cloud Control API references and remove them.",
+  "plan_file": null,
+  "task": {
+    "id": "cloud-control-cleanup",
+    "name": "Remove Cloud Control API references",
+    "status": "pending",
+    "description": "The provider originally used the Cloud Control API but now uses native AWS SDK calls. Review the codebase for any leftover references to Cloud Control and remove them.",
+    "steps": [
+      "Search for 'cloudcontrol' or 'CloudControl' references in code",
+      "Search for 'cloud-control' or 'cloud_control' references",
+      "Review any AWS provider pattern references that may be outdated",
+      "Remove or update any found references",
+      "Verify tests still pass after changes"
+    ]
+  }
 }
