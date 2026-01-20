@@ -53,13 +53,6 @@ else
     echo "    Go $CURRENT_GO_VERSION is already installed"
 fi
 
-# Configure GOPROXY with fallback mirrors for restricted environments
-# goproxy.io is a global mirror that works when proxy.golang.org is blocked
-echo "==> Configuring Go module proxy..."
-export GOPROXY="https://proxy.golang.org,https://goproxy.io,direct"
-go env -w GOPROXY="https://proxy.golang.org,https://goproxy.io,direct"
-echo "    GOPROXY set to: $GOPROXY"
-
 echo "==> Installing prek (pre-commit replacement)..."
 if command -v prek &> /dev/null; then
     echo "    prek already installed: $(prek --version 2>&1 | head -1)"
